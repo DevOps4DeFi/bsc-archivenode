@@ -181,7 +181,7 @@ make geth >> $LOGFILE 2>&1
 
 ## Geth Configuration Files
 wget   $(curl -s https://api.github.com/repos/binance-chain/bsc/releases/latest |grep browser_ |grep mainnet |cut -d\" -f4) $LOGFILE 2>&1
-unzip mainnet.zip $LOGFILE 2>&1
+unzip mainnet.zip >> $LOGFILE 2>&1
 
     ERROR=$?
         if [ $ERROR -ne 0 ]; then
