@@ -8,22 +8,16 @@ apt install -y golang
 apt install -y unzip
 apt install -y make
 
-mkdir /bsc_geth_node
-cd /bsc_geth_node
-wget  https://github.com/binance-chain/bsc/releases/download/v1.0.6/geth_linux
-mv geth_linux geth
-chmod 755 ./geth
-wget   $(curl -s https://api.github.com/repos/binance-chain/bsc/releases/latest |grep browser_ |grep mainnet |cut -d\" -f4)
-unzip mainnet.zip
-./geth --datadir node init genesis.json
-./geth --config ./config.toml --datadir ./node --pprofaddr 0.0.0.0 --metrics --pprof
 
 ## Install Sumo Collector
-
+mkdir /sumo
+cd /sumo
 wget "https://collectors.sumologic.com/rest/download/linux/64" -O SumoCollector.sh && chmod +x SumoCollector.sh
 chmod +x SumoCollector.sh
-sudo ./SumoCollector.sh -q -Vsumo.accessid=<accessId> -Vsumo.accesskey=<accessKey> -VsyncSources=/node/bsc.log -Vcollector.name=bsc-archive-node
+./SumoCollector.sh -q -Vsumo.accessid=<accessId> -Vsumo.accesskey=<accessKey> -VsyncSources=/node/bsc.log -Vcollector.name=bsc-archive-node
 
+mkdir /bsc_geth_node
+cd /bsc_geth_node
 
 ## Geth Deploy
 git clone https://github.com/binance-chain/bsc
@@ -38,12 +32,8 @@ unzip mainnet.zip
 geth --datadir node init genesis.json
 geth account new --datadir ./node
 
-# Need to secure this step
-echo {your-password} > password.txt
-geth --config ./config.toml --datadir ./node -unlock {your-validator-address} --password password.txt  --mine --gcmode archive --allow-insecure-unlock  --pprofaddr 0.0.0.0 --metrics --pprof
-
 # Restart GETH Node service on reboot
-sudo touch startgeth.sh
+touch startgeth.sh
 cat >> startgeth.sh <<EOL
 geth --config ./config.toml --datadir ./node --pprofaddr 0.0.0.0 --metrics --pprof
 EOL
@@ -53,10 +43,10 @@ cat >> /lib/systemd/system/geth.service <<EOL
 [Unit]
 Description=Ethereum go client
 [Service]
-User=<your geth user>
+User=root
 Type=simple
-WorkingDirectory=/home/<your geth user>
-ExecStart=/bin/bash /home/<your geth user>/startgeth.sh
+WorkingDirectory=/bsc_geth_node
+ExecStart=/bin/bash /bsc_geth_nodestartgeth.sh
 Restart=on-failure
 RestartSec=5
 [Install]
