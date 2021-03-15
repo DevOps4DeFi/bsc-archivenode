@@ -9,7 +9,7 @@ variable "ethnode_url_ssm_parameter_name" {
 variable "app_name" {
   type        = string
   description = "The name of the application that will be used for tagging."
-  default     = "local-graphnode-cluster"
+  default     = "bsc-archive-node"
 }
 variable "aws_keypair_name" {
   type        = string
@@ -33,20 +33,6 @@ variable "vpc_id" {
   default     = null
   description = "The VPC to deploy into, if null use default vpc."
 }
-##TODO add support for private subents
-variable "asg_details" {
-  type = object({ instance_type = string, min_nodes = number, desired_nodes = number, max_nodes = number, storage_size_gb = number })
-  default = {
-    instance_type   = "t2.micro"
-    min_nodes       = 1
-    max_nodes       = 1
-    desired_nodes   = 1
-    storage_size_gb = "15"
-  }
-  description = "How many of which instance type for the autoscailing group.  Defaults to 1 t2.micro for free tier."
-}
-variable "subgraph_github_repos" {
-  type = list(string)
-  description = "A list of http paths to one or more subgraph repos like [\"https:/https://github.com/Badger-Finance/badger-subgraph\"]"
-}
+
+
 
