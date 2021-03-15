@@ -59,3 +59,49 @@ yarn deploy-local $dirname
 cd ../
 done
 
+## Install Sumo Collector
+
+wget "https://collectors.sumologic.com/rest/download/linux/64" -O SumoCollector.sh && chmod +x SumoCollector.sh
+chmod +x SumoCollector.sh
+sudo ./SumoCollector.sh -q -Vsumo.accessid=<accessId> -Vsumo.accesskey=<accessKey> -VsyncSources=/node/bsc.log -Vcollector.name=bsc-archive-node
+
+
+## Geth Deploy
+git clone https://github.com/binance-chain/bsc
+cd bsc
+make geth
+
+## Geth Configuration Files
+wget   $(curl -s https://api.github.com/repos/binance-chain/bsc/releases/latest |grep browser_ |grep mainnet |cut -d\" -f4)
+unzip mainnet.zip
+
+## Write Local Genesis State
+geth --datadir node init genesis.json
+geth account new --datadir ./node
+
+# Need to secure this step
+echo {your-password} > password.txt
+geth --config ./config.toml --datadir ./node -unlock {your-validator-address} --password password.txt  --mine --gcmode archive --allow-insecure-unlock  --pprofaddr 0.0.0.0 --metrics --pprof
+
+# Restart GETH Node service on reboot
+sudo touch startgeth.sh
+cat >> startgeth.sh <<EOL
+geth --config ./config.toml --datadir ./node --pprofaddr 0.0.0.0 --metrics --pprof
+EOL
+geth --config config.toml 2> geth.log
+sudo touch /lib/systemd/system/geth.service
+cat >> /lib/systemd/system/geth.service <<EOL
+[Unit]
+Description=Ethereum go client
+[Service]
+User=<your geth user>
+Type=simple
+WorkingDirectory=/home/<your geth user>
+ExecStart=/bin/bash /home/<your geth user>/startgeth.sh
+Restart=on-failure
+RestartSec=5
+[Install]
+WantedBy=default.target
+EOL
+
+
