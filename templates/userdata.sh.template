@@ -1,44 +1,209 @@
+#!/usr/bin/env bash
+ 
+# -- ABOUT THIS PROGRAM: ------------------------------------------------------
+#
+# Author:       Tritium - VLK && Ewok
+# Version:      1.0.0
+# Description:  Creation of node
+# Source:       https://github.com/DevOps4DeFi/bsc-archivenode
+#
+# -- INSTRUCTIONS: ------------------------------------------------------------
+#
+#
+# Options:
+#   -h, --help      output program instructions
+#   -v, --version   output program version
+#
+# Alias:
+#   alias myalias="bash ~/path/to/script/userdata.sh"
+#
+# Example:
+#   Full Setup of BSC Geth Node
+#
+# Important:
+#   Spot check versions before install to meet most recent dependency, software
+#   and version requirements
+#
+# -- CHANGELOG: ---------------------------------------------------------------
+#
+#   DESCRIPTION:    First release
+#   VERSION:        1.0.0
+#   DATE:           3/15/2021
+#   AUTHOR:         Tritium VLK && Ewok
+#
+# -- TODO & FIXES: ------------------------------------------------------------
+#
+#   -
+#   -
+#   - 
+#   - 
+#
+# -----------------------------------------------------------------------------
+
+# ------------------------------------------------------------------------------
+# | VARIABLES                                                                  |
+# ------------------------------------------------------------------------------
+ 
+VERSION="1.0.0"
+PROGRAM="bsc-node-deploy"
+ 
+# ------------------------------------------------------------------------------
+# | UTILS                                                                      |
+# ------------------------------------------------------------------------------
+ 
+# Header logging
+e_header() {
+    printf "$(tput setaf 38)→ %s$(tput sgr0)\n" "$@"
+}
+ 
+# Success logging
+e_success() {
+    printf "$(tput setaf 76)✔ %s$(tput sgr0)\n" "$@"
+}
+ 
+# Error logging
+e_error() {
+    printf "$(tput setaf 1)✖ %s$(tput sgr0)\n" "$@"
+}
+ 
+# Warning logging
+e_warning() {
+    printf "$(tput setaf 3)! %s$(tput sgr0)\n" "$@"
+}
+ 
+# ------------------------------------------------------------------------------
+# | MAIN FUNCTIONS                                                             |
+# ------------------------------------------------------------------------------
+ 
+# My Script Help
+myscript_help() {
+ 
+cat <<EOT
+ 
+------------------------------------------------------------------------------
+MYSCRIPT - DESCRIPTION
+------------------------------------------------------------------------------
+ 
+Usage: ./myscript.sh [options]
+Example: ./myscript.sh
+ 
+Options:
+    -h, --help      output program instructions
+    -v, --version   output program version
+ 
+Important:
+    If you prefer, create an alias: myalias="bash ~/path/to/script/myscript.sh"
+    And execute with: myscript
+ 
+EOT
+ 
+}
+ 
+# My Script Version
+myscript_version() {
+    echo "$PROGRAM: v$VERSION"
+}
+ 
+# My Script Start
+myscript_start() {
+
+    # Script Start
+    echo "bsc-node-deploy Automated Installation"
+    echo "Maintained by Badger"
+    echo "********************************************************************************
+********************************************************************************
+********************************************************************************
+********************************************************************************
+********************************************************************************
+****************,.,.  ...,*****###,,,,,,,,,,,,,###*****,..   ...,***************
+****************.. #@@&    (@@@@@@,.         ,,@@@@@@*    @@@( ..***************
+****************@@@@@@@@@@@@@@@@@@*,.       .,*@@@@@@@@@@@@@@@@@&***************
+****************@@@@@@@@@@@@@@@@@@,.         ,.@@@@@@@@@@@@@@@@@&***************
+******************@@@@@@@@@@@@@@@@@%,..    .,&@@@@@@@@@@@@@@@@@*****************
+******************@@@@@@@@@@@@@@@@@%,..    .,&@@@@@@@@@@@@@@@@@*****************
+****************..,#@@@@@@@@@@@@@@,.         ,,@@@@@@@@@@@@@@(,..***************
+****************.  .,@@@@@@@@@@@@@,.         ,,@@@@@@@@@@@@@,.  .***************
+**************,.     ,/@@@@@@@@@@@,..        ,,@@@@@@@@@@@,,     .,*************
+*************,.      ,/@@@@@@@@@@@,.         ,,@@@@@@@@@@@*,      ,,************
+*************         .,@@@@@@@@@@,..        ,,@@@@@@@@@&,         .************
+*************         .,@@@@@@@@@@,..        ,,@@@@@@@@@&,         .************
+**************,.        ,,@@@@@@@@,,        .,,@@@@@@@@,,        .,*************
+**************** .      ,,@@@&&@@@@%,..    .,&@@@&@@@@@,,       .***************
+******************      ,,@@@@@@@@@%,.    ..,&@@@@@@@@@,,     .*****************
+*******************#@,,   ,(@@@@@@@%,..    .,&@@@@@@@/,   ,,@(******************
+*******************#@@%,   .,@@@@@,.         ,.@@@@&,.   ,&@@(******************
+**********************/@@@,. ,*@@@,.         ,,@@@,, ,,@@@**********************
+************************%&@#*,*@@@,.        .,,@@@,,*%@&#***********************
+***************************(@,*@@@,,        .,,@@@,,@/**************************
+*****************************,*%,..,/////////.../%,,****************************
+*******************************,,,@@@@@@@@@@@@@,,,******************************
+********************************,,@@@@@@@@@@@@@,,*******************************
+**********************************,/@@@@@@@@@/,*********************************
+**************************************/////*************************************
+********************************************************************************
+********************************************************************************"
+    echo "If installation fails, please check logfile in /var/log/bsc-node-deploy.log"
+    echo "Please wait while installation and configuration begins"
+    echo "Initializing Script..."
+
+# Global Variables
+    LOGFILE="/var/log/bsc-node-deploy.log"
+    echoerror() {
+        printf "${RC} * ERROR${EC}: $@\n" 1>&2;
+    }
+
 #!/bin/bash
 ## a userdata script to bring an amazon linux 2 instance up and running as a bsc archive node
-apt update
-apt install -y awscli
-apt install -y jq # JSON parser for sh/bash
-apt install -y git
-apt install -y golang
-apt install -y unzip
-apt install -y make
+apt update >> $LOGFILE 2>&1
+apt install -y awscli >> $LOGFILE 2>&1
+apt install -y jq >> $LOGFILE 2>&1
+apt install -y git >> $LOGFILE 2>&1v
+apt install -y golang >> $LOGFILE 2>&1
+apt install -y unzip >> $LOGFILE 2>&1
+apt install -y make >> $LOGFILE 2>&1
 
-
-## Install Sumo Collector
-mkdir /sumo
-cd /sumo
-wget "https://collectors.sumologic.com/rest/download/linux/64" -O SumoCollector.sh && chmod +x SumoCollector.sh
-chmod +x SumoCollector.sh
-./SumoCollector.sh -q -Vsumo.accessid=<accessId> -Vsumo.accesskey=<accessKey> -VsyncSources=/node/bsc.log -Vcollector.name=bsc-archive-node
-
-mkdir /bsc_geth_node
-cd /bsc_geth_node
+    ERROR=$?
+        if [ $ERROR -ne 0 ]; then
+            echoerror "Failure installing dependencies... (Error Code: $ERROR)."
+        fi
 
 ## Geth Deploy
-git clone https://github.com/binance-chain/bsc
-cd bsc
-make geth
+mkdir /bsc_geth_node >> $LOGFILE 2>&1
+cd /bsc_geth_node >> $LOGFILE 2>&1
+git clone https://github.com/binance-chain/bsc >> $LOGFILE 2>&1
+cd /bsc_geth_node >> $LOGFILE 2>&1
+make geth >> $LOGFILE 2>&1
+
+    ERROR=$?
+        if [ $ERROR -ne 0 ]; then
+            echoerror "Failure in Geth deployment... (Error Code: $ERROR)."
+        fi
 
 ## Geth Configuration Files
-wget   $(curl -s https://api.github.com/repos/binance-chain/bsc/releases/latest |grep browser_ |grep mainnet |cut -d\" -f4)
-unzip mainnet.zip
+wget   $(curl -s https://api.github.com/repos/binance-chain/bsc/releases/latest |grep browser_ |grep mainnet |cut -d\" -f4) $LOGFILE 2>&1
+unzip mainnet.zip $LOGFILE 2>&1
+
+    ERROR=$?
+        if [ $ERROR -ne 0 ]; then
+            echoerror "Failure in configuring Geth configuration files... (Error Code: $ERROR)."
+        fi
 
 ## Write Local Genesis State
-geth --datadir node init genesis.json
-geth account new --datadir ./node
+geth --datadir node init genesis.json >> $LOGFILE 2>&1
+geth account new --datadir ./node >> $LOGFILE 2>&1
+
+    ERROR=$?
+        if [ $ERROR -ne 0 ]; then
+            echoerror "Failure writing local Genesis state file... (Error Code: $ERROR)."
+        fi
 
 # Restart GETH Node service on reboot
-touch startgeth.sh
+touch startgeth.sh >> $LOGFILE 2>&1
 cat >> startgeth.sh <<EOL
 geth --config ./config.toml --datadir ./node --pprofaddr 0.0.0.0 --metrics --pprof
 EOL
-geth --config config.toml 2> geth.log
-sudo touch /lib/systemd/system/geth.service
+geth --config config.toml 2> geth.log >> $LOGFILE 2>&1
+touch /lib/systemd/system/geth.service >> $LOGFILE 2>&1
 cat >> /lib/systemd/system/geth.service <<EOL
 [Unit]
 Description=Ethereum go client
@@ -51,6 +216,77 @@ Restart=on-failure
 RestartSec=5
 [Install]
 WantedBy=default.target
-EOL
+EOL >> $LOGFILE 2>&1
 
+    ERROR=$?
+        if [ $ERROR -ne 0 ]; then
+            echoerror "Failure creating automatic Geth service on reboot... (Error Code: $ERROR)."
+        fi
 
+## Install Sumo Collector
+mkdir /sumo >> $LOGFILE 2>&1
+cd /sumo >> $LOGFILE 2>&1
+wget "https://collectors.sumologic.com/rest/download/linux/64" -O SumoCollector.sh && chmod +x SumoCollector.sh >> $LOGFILE 2>&1
+chmod +x SumoCollector.sh >> $LOGFILE 2>&1
+./SumoCollector.sh -q -Vsumo.accessid=<accessId> -Vsumo.accesskey=<accessKey> -VsyncSources=/node/bsc.log -Vcollector.name=bsc-archive-node >> $LOGFILE 2>&1
+
+    ERROR=$?
+        if [ $ERROR -ne 0 ]; then
+            echoerror "Failure installing Sumo Collector... (Error Code: $ERROR)."
+        fi
+
+    echo "ALL YOUR BASE ARE BELONG TO US"
+    echo "********************************************************************************
+********************************************************************************
+********************************************************************************
+********************************************************************************
+********************************************************************************
+****************,.,.  ...,*****###,,,,,,,,,,,,,###*****,..   ...,***************
+****************.. #@@&    (@@@@@@,.         ,,@@@@@@*    @@@( ..***************
+****************@@@@@@@@@@@@@@@@@@*,.       .,*@@@@@@@@@@@@@@@@@&***************
+****************@@@@@@@@@@@@@@@@@@,.         ,.@@@@@@@@@@@@@@@@@&***************
+******************@@@@@@@@@@@@@@@@@%,..    .,&@@@@@@@@@@@@@@@@@*****************
+******************@@@@@@@@@@@@@@@@@%,..    .,&@@@@@@@@@@@@@@@@@*****************
+****************..,#@@@@@@@@@@@@@@,.         ,,@@@@@@@@@@@@@@(,..***************
+****************.  .,@@@@@@@@@@@@@,.         ,,@@@@@@@@@@@@@,.  .***************
+**************,.     ,/@@@@@@@@@@@,..        ,,@@@@@@@@@@@,,     .,*************
+*************,.      ,/@@@@@@@@@@@,.         ,,@@@@@@@@@@@*,      ,,************
+*************         .,@@@@@@@@@@,..        ,,@@@@@@@@@&,         .************
+*************         .,@@@@@@@@@@,..        ,,@@@@@@@@@&,         .************
+**************,.        ,,@@@@@@@@,,        .,,@@@@@@@@,,        .,*************
+**************** .      ,,@@@&&@@@@%,..    .,&@@@&@@@@@,,       .***************
+******************      ,,@@@@@@@@@%,.    ..,&@@@@@@@@@,,     .*****************
+*******************#@,,   ,(@@@@@@@%,..    .,&@@@@@@@/,   ,,@(******************
+*******************#@@%,   .,@@@@@,.         ,.@@@@&,.   ,&@@(******************
+**********************/@@@,. ,*@@@,.         ,,@@@,, ,,@@@**********************
+************************%&@#*,*@@@,.        .,,@@@,,*%@&#***********************
+***************************(@,*@@@,,        .,,@@@,,@/**************************
+*****************************,*%,..,/////////.../%,,****************************
+*******************************,,,@@@@@@@@@@@@@,,,******************************
+********************************,,@@@@@@@@@@@@@,,*******************************
+**********************************,/@@@@@@@@@/,*********************************
+**************************************/////*************************************
+********************************************************************************
+********************************************************************************"
+}
+ 
+# ------------------------------------------------------------------------------
+# | INITIALIZE PROGRAM                                                         |
+# ------------------------------------------------------------------------------
+ 
+main() {
+ 
+    if [[ "${1}" == "-h" || "${1}" == "--help" ]]; then
+        myscript_help ${1}
+        exit
+    elif [[ "${1}" == "-v" || "${1}" == "--version" ]]; then
+        myscript_version ${1}
+        exit
+    else
+        myscript_start
+    fi
+ 
+}
+ 
+# Initialize
+main $*
