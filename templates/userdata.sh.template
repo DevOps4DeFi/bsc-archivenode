@@ -167,7 +167,7 @@ apt install -y make >> $LOGFILE 2>&1
             echoerror "Failure installing dependencies... (Error Code: $ERROR)."
         fi
 
-## Geth Deploy
+## Geth Deploy 
 mkdir /bsc_geth_node >> $LOGFILE 2>&1
 cd /bsc_geth_node >> $LOGFILE 2>&1
 git clone https://github.com/binance-chain/bsc >> $LOGFILE 2>&1
