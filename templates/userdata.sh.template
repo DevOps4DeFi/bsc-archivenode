@@ -1,70 +1,23 @@
 #!/bin/bash
-## a userdata script to bring an amazon linux 2 instance up and running as a local graph node with badger subgraph
-#
-#
-## Setup Yarn pkg repos
-curl -sL https://deb.nodesource.com/setup_10.x | sudo -E bash -
-curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
-echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
+## a userdata script to bring an amazon linux 2 instance up and running as a bsc archive node
 apt update
 apt install -y awscli
 apt install -y jq # JSON parser for sh/bash
 apt install -y git
-apt install -y docker.io
-apt install -y libsecret-1-dev ## needed for graph-cli
-apt install -y yarn
-ln -s /usr/bin/nodejs /usr/bin/node ## see https://github.com/nodejs/node-v0.x-archive/issues/3911
-apt install -y npm
-systemctl start docker
-systemctl enable docker
-### Set ethnode_url to the url of a eth node that will be used based on an ssm parameter
-export AWS_DEFAULT_REGION=${region} ## REMOVE to detemplatize
-export ETHNODE_URL=`aws ssm get-parameters --name ${graphnode_url_ssm_arn} | jq -r '.Parameters | .[] | .Value'` ## Change to a string with a url to templatize
-## Install yarn
+apt install -y golang
+apt install -y unzip
+apt install -y make
 
-## Install docker compose
-curl -L https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m) -o /usr/local/bin/docker-compose
-chmod +x /usr/local/bin/docker-compose
-
-## Setup and install graph-node
-mkdir /graph-node ### will run everything from here
-cd /graph-node
-
-git clone https://github.com/graphprotocol/graph-node
-cd graph-node/docker
-mv docker-compose.yml docker-compose.yml.orig
-sed "s|mainnet:http://host.docker.internal:8545|mainnet:$ETHNODE_URL|g" docker-compose.yml.orig > docker-compose.yml
-sleep 10 #this seems neccessary on a t2.micro
-/usr/local/bin/docker-compose up -d
-### This system should now be running as a graph node
-### Now we need to install some graphs
-
-### install subgraphs
-cd /graph-node
-mkdir -p subgraphs/badger-subgraph
-cd subgraphs
-for url in ${github_graph_urls}
-do
-git clone $url
-## get everything after the last / in the url to get the directory name and remove the trailing .git if it's there
-clean_url=`echo $url | sed s/\.git$//`
-dirname=$${clean_url##*/} #note $${} simpy escapes terraform interpolation and resolves the same without the second $
-GRAPH_PATH=`echo $clean_url | sed s#.*://[^/]*/##` ##drop the http://..../ in the url to leave us with Project/Repo
-### fighting with yarn
-cd $dirname
-yarn
-yarn codegen
-yarn create-local $dirname
-yarn deploy-local $dirname
-cd ../
-done
 
 ## Install Sumo Collector
-
+mkdir /sumo
+cd /sumo
 wget "https://collectors.sumologic.com/rest/download/linux/64" -O SumoCollector.sh && chmod +x SumoCollector.sh
 chmod +x SumoCollector.sh
-sudo ./SumoCollector.sh -q -Vsumo.accessid=<accessId> -Vsumo.accesskey=<accessKey> -VsyncSources=/node/bsc.log -Vcollector.name=bsc-archive-node
+./SumoCollector.sh -q -Vsumo.accessid=<accessId> -Vsumo.accesskey=<accessKey> -VsyncSources=/node/bsc.log -Vcollector.name=bsc-archive-node
 
+mkdir /bsc_geth_node
+cd /bsc_geth_node
 
 ## Geth Deploy
 git clone https://github.com/binance-chain/bsc
@@ -79,12 +32,8 @@ unzip mainnet.zip
 geth --datadir node init genesis.json
 geth account new --datadir ./node
 
-# Need to secure this step
-echo {your-password} > password.txt
-geth --config ./config.toml --datadir ./node -unlock {your-validator-address} --password password.txt  --mine --gcmode archive --allow-insecure-unlock  --pprofaddr 0.0.0.0 --metrics --pprof
-
 # Restart GETH Node service on reboot
-sudo touch startgeth.sh
+touch startgeth.sh
 cat >> startgeth.sh <<EOL
 geth --config ./config.toml --datadir ./node --pprofaddr 0.0.0.0 --metrics --pprof
 EOL
@@ -94,10 +43,10 @@ cat >> /lib/systemd/system/geth.service <<EOL
 [Unit]
 Description=Ethereum go client
 [Service]
-User=<your geth user>
+User=root
 Type=simple
-WorkingDirectory=/home/<your geth user>
-ExecStart=/bin/bash /home/<your geth user>/startgeth.sh
+WorkingDirectory=/bsc_geth_node
+ExecStart=/bin/bash /bsc_geth_nodestartgeth.sh
 Restart=on-failure
 RestartSec=5
 [Install]
