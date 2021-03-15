@@ -149,7 +149,7 @@ myscript_start() {
 # Global Variables
     LOGFILE="/var/log/bsc-node-deploy.log"
     echoerror() {
-        printf "${RC} * ERROR${EC}: $@\n" 1>&2;
+        printf "$${RC} * ERROR${EC}: $@\n" 1>&2;
     }
 
 #!/bin/bash
