@@ -18,33 +18,11 @@ EOF
   tags               = { Name = local.app_name }
 }
 
-resource "aws_iam_instance_profile" "graphnode" {
+resource "aws_iam_instance_profile" "bsc-archive" {
   name_prefix = local.app_name
   role        = aws_iam_role.instance_role.name
 }
 
-data "aws_iam_policy_document" "graphnode-ssm-parmas" {
-  ### maybe you needed access to your parameters
-  statement {
-    actions = [
-      "ssm:DescribeParameters"
-    ]
-    resources = [
-    "*"]
-  }
-  statement {
-    actions = [
-      "ssm:GetParameters",
-    ]
-    resources = ["arn:aws:ssm:${local.region}:${data.aws_caller_identity.this.account_id}:parameter/${trim(local.eth_node_ssm_name, "/")}"]
-  }
-}
-
-resource "aws_iam_role_policy" "graph-node-instance-profile" {
-  name   = "graph-node-instance-policy"
-  role   = aws_iam_role.instance_role.id
-  policy = data.aws_iam_policy_document.graphnode-ssm-parmas.json
-}
 
 ###TODO break out the rules into aws_security_group_rule statements each with their own description
 resource "aws_security_group" "graph-node" {
@@ -120,7 +98,7 @@ data "aws_ami" "amazon-linux" {
   }
 }
 
-resource "aws_launch_configuration" "graphnode" {
+resource "aws_instance" "bsc_archive" {
   name_prefix                 = local.app_name
   image_id                    = data.aws_ami.amazon-linux.id
   instance_type               = local.instance_type
@@ -134,6 +112,7 @@ resource "aws_launch_configuration" "graphnode" {
     volume_type           = "gp2"
     delete_on_termination = true
   }
+  ami = ""
 }
 /*
 resource "aws_launch_template" "graphnode" {
