@@ -171,7 +171,8 @@ apt install -y make >> $LOGFILE 2>&1
  SUMO_KEY=${sumo_key_ssm_path}
  AWS_REGION=${region}
  MOUNT_POINT=${mount_point}
-## Geth Deploy
+
+## Geth Deploy 
 
 add-apt-repository -y ppa:ethereum/ethereum >> $LOGFILE 2>&1
 apt-get update >> $LOGFILE 2>&1
