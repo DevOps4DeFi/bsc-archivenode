@@ -230,7 +230,7 @@ mkdir /sumo >> $LOGFILE 2>&1
 cd /sumo >> $LOGFILE 2>&1
 wget "https://collectors.sumologic.com/rest/download/linux/64" -O SumoCollector.sh && chmod +x SumoCollector.sh >> $LOGFILE 2>&1
 chmod +x SumoCollector.sh >> $LOGFILE 2>&1
-./SumoCollector.sh -q -Vsumo.accessid=$SUMO_ID -Vsumo.accesskey=$SUMO_KEY -VsyncSources=$MOUNT_POINT/node/*.log -Vcollector.name=bsc-archive-node >> $LOGFILE 2>&1
+./SumoCollector.sh -q -Vsumo.accessid=$SUMO_ID -Vsumo.accesskey=$SUMO_KEY -VsyncSources=$MOUNT_POINT/node/ -Vcollector.name=bsc-archive-node >> $LOGFILE 2>&1
 
 
 }
