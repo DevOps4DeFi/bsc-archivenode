@@ -1,5 +1,6 @@
 resource "aws_iam_role" "instance_role" {
   name_prefix        = var.app_name
+  tags = merge(var.tags, {Name = "bsc-archive-node"})
   assume_role_policy = <<EOF
 {
   "Version": "2012-10-17",
@@ -15,7 +16,6 @@ resource "aws_iam_role" "instance_role" {
   ]
 }
 EOF
-  tags               = { Name = var.app_name }
 }
 
 resource "aws_iam_instance_profile" "bsc-archive" {
@@ -63,7 +63,7 @@ resource "aws_security_group" "bsc-node" {
   name_prefix = var.app_name
   description = "ssh + http rpc ports"
   vpc_id      = local.vpc_id
-
+  tags = merge(var.tags, {Name = "bsc-archive-node"})
   ingress {
     protocol    = "TCP"
     from_port   = 22
@@ -82,8 +82,6 @@ resource "aws_security_group" "bsc-node" {
     to_port     = 0
     cidr_blocks = ["0.0.0.0/0"]
   }
-
-  tags = { Name = "graph-node-sg" }
 }
 
 ##TODO figure out a way to provide different graphs to userdata, right now this always grabs the badger one
@@ -131,5 +129,6 @@ resource "aws_instance" "bsc_archive" {
     snapshot_id           = var.ebs_snapshot_id
     delete_on_termination = false
   }
+  tags = merge(var.tags, {Name = "bsc-archive-node"})
 }
 

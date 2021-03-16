@@ -87,3 +87,8 @@ variable "private_subnet_ids" {
   type        = list(string)
   description = "A list of public subnets in the vpc, if null use default vpc."
 }
+
+variable "tags" {
+  type = map(string)
+  default = {}
+}

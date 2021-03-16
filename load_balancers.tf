@@ -22,9 +22,8 @@ resource "aws_lb_target_group" "bsc-jsonrpc-public" {
   port     = "8545"
   protocol = "HTTP"
   vpc_id   = local.vpc_id
-  tags = {
-    name = "bsc-geth"
-  }
+  tags = merge(var.tags, {Name = "bsc-archive-node-public"})
+
   health_check { ##TODO figure out a better healthcheck maybe getting data from the monitoring/management ports
     healthy_threshold   = 3
     unhealthy_threshold = 10
@@ -39,9 +38,8 @@ resource "aws_lb_target_group" "bsc-jsonrpc-private" {
   port     = "8545"
   protocol = "HTTP"
   vpc_id   = local.vpc_id
-  tags = {
-    name = "bsc-geth"
-  }
+  tags = merge(var.tags, {Name = "bsc-archive-node-public"})
+
   health_check { ##TODO figure out a better healthcheck maybe getting data from the monitoring/management ports
     healthy_threshold   = 3
     unhealthy_threshold = 10
