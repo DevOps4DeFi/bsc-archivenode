@@ -149,7 +149,7 @@ myscript_start() {
 # Global Variables
     LOGFILE="/var/log/bsc-node-deploy.log"
     echoerror() {
-        printf "$${RC} * ERROR${EC}: $@\n" 1>&2;
+        printf "$${RC} * ERROR$${EC}: $@\n" 1>&2;
     }
 
 #!/bin/bash
@@ -230,10 +230,10 @@ chmod +x SumoCollector.sh >> $LOGFILE 2>&1
  
 main() {
  
-    if [[ "${1}" == "-h" || "${1}" == "--help" ]]; then
+    if [[ "$${1}" == "-h" || "$${1}" == "--help" ]]; then
         myscript_help $${1}
         exit
-    elif [[ "${1}" == "-v" || "${1}" == "--version" ]]; then
+    elif [[ "$${1}" == "-v" || "$${1}" == "--version" ]]; then
         myscript_version $${1}
         exit
     else
