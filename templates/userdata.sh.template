@@ -195,18 +195,18 @@ mkdir -p $MOUNT_POINT >> $LOGFILE 2>&1
 echo "$DEVICE  $MOUNT_POINT  xfs  defaults,nofail  0  2" >> /etc/fstab
 mount $MOUNT_POINT >> $LOGFILE 2>&1
 cd $MOUNT_POINT >> $LOGFILE 2>&1
-#git clone https://github.com/binance-chain/bsc >> $LOGFILE 2>&1
-#make geth >> $LOGFILE 2>&1
-wget https://github.com/binance-chain/bsc/releases/download/v1.0.6/geth_linux >> $LOGFILE 2>&1
-mv geth_linux geth >> $LOGFILE 2>&1
-chmod 755 geth >> $LOGFILE 2>&1
+git clone https://github.com/binance-chain/bsc >> $LOGFILE 2>&1
+cd bsc
+make geth >> $LOGFILE 2>&1
+mv geth ../
+cd ../
 ## Geth Configuration Files
 wget   $(curl -s https://api.github.com/repos/binance-chain/bsc/releases/latest |grep browser_ |grep mainnet |cut -d\" -f4) >> $LOGFILE 2>&1
 unzip mainnet.zip >> $LOGFILE 2>&1
 
 ## Write Local Genesis State
 geth --datadir node init genesis.json >> $LOGFILE 2>&1
-geth account new --datadir ./node >> $LOGFILE 2>&1
+#geth account new --datadir ./node >> $LOGFILE 2>&1
 
 # Restart GETH Node service on reboot.
 touch startgeth.sh >> $LOGFILE 2>&1
@@ -228,6 +228,8 @@ RestartSec=5
 [Install]
 WantedBy=default.target
 EOL
+
+./startgeth&
 
 ## Install Sumo Collector
 mkdir /sumo >> $LOGFILE 2>&1
