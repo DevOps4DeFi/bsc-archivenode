@@ -241,7 +241,7 @@ RestartSec=5
 WantedBy=default.target
 EOL
 
-./startgeth&
+systemctl start geth
 
 ## Install Sumo Collector
 mkdir /sumo >> $LOGFILE 2>&1
