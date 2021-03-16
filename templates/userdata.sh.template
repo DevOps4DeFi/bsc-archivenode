@@ -200,6 +200,8 @@ mount $MOUNT_POINT >> $LOGFILE 2>&1
 cd $MOUNT_POINT >> $LOGFILE 2>&1
 git clone https://github.com/binance-chain/bsc >> $LOGFILE 2>&1
 cd bsc
+export PATH=$PATH:/usr/local/go/bin:. >> $LOGFILE 2>&1
+export GOPATH=/usr/local/go/bin
 export HOME=/root
 make geth >> $LOGFILE 2>&1
 cp ./build/bin/geth ../
@@ -250,6 +252,7 @@ chmod +x SumoCollector.sh >> $LOGFILE 2>&1
 
 
 }
+
 
 # ------------------------------------------------------------------------------
 # | INITIALIZE PROGRAM                                                         |
