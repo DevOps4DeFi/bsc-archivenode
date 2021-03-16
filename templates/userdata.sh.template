@@ -184,6 +184,8 @@ apt-get install ethereum -y >> $LOGFILE 2>&1
         fi
 
 # If no FS, then this output contains "data"
+DEVICE=${ebs_device_name}
+FS_TYPE=$(file -s $DEVICE | awk '{print $2}')
 if [ "$FS_TYPE" = "data" ]
 then
     echo "Creating file system on $DEVICE" >> $LOGFILE 2>&1

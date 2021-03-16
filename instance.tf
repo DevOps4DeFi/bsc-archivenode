@@ -94,7 +94,7 @@ data "template_file" "userdata" {
     sumo_key_ssm_path = var.sumo_key_ssm_path
     sumo_id_ssm_path  = var.sumo_id_ssm_path
     region            = var.region
-    ebs_device_name   = "/dev/sdb"
+    ebs_device_name   = "/dev/nvme1n1"
     mount_point       = "/bsc_geth"
   }
 }
