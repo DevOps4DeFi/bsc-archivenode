@@ -240,6 +240,7 @@ WorkingDirectory=$MOUNT_POINT
 ExecStart=/bin/bash $MOUNT_POINT/startgeth.sh
 Restart=on-failure
 RestartSec=5
+TimeoutStopSec=10m
 [Install]
 WantedBy=default.target
 EOL
