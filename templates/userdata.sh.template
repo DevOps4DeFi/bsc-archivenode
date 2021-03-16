@@ -172,6 +172,16 @@ apt install -y make >> $LOGFILE 2>&1
  AWS_REGION=${region}
  MOUNT_POINT=${mount_point}
 ## Geth Deploy 
+
+add-apt-repository -y ppa:ethereum/ethereum >> $LOGFILE 2>&1
+apt-get update >> $LOGFILE 2>&1
+apt-get install ethereum >> $LOGFILE 2>&1
+
+    ERROR=$?
+        if [ $ERROR -ne 0 ]; then
+            echoerror "Geth install has failed... (Error Code: $ERROR)."
+        fi
+
 # If no FS, then this output contains "data"
 if [ "$FS_TYPE" = "data" ]
 then
