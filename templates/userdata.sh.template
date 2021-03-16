@@ -244,6 +244,7 @@ RestartSec=5
 WantedBy=default.target
 EOL
 
+systemctl enable geth
 systemctl start geth
 
 ## Install Sumo Collector
