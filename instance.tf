@@ -94,7 +94,7 @@ data "template_file" "userdata" {
     sumo_key_ssm_path = var.sumo_key_ssm_path
     sumo_id_ssm_path  = var.sumo_id_ssm_path
     region            = var.region
-    ebs_device_name   = "/dev/sdc"
+    ebs_device_name   = "/dev/sdc1"
     mount_point       = "/bsc_geth"
   }
 }
@@ -125,7 +125,7 @@ resource "aws_instance" "bsc_archive" {
   user_data                   = data.template_file.userdata.rendered
   key_name                    = var.aws_keypair_name
   ebs_block_device {
-    device_name           = "/dev/sdc"
+    device_name           = "/dev/sdc1"
     volume_type           = "gp2"
     volume_size           = var.datavolume_size
     snapshot_id           = var.ebs_snapshot_id
