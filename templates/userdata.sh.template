@@ -157,8 +157,8 @@ myscript_start() {
 apt update >> $LOGFILE 2>&1
 apt install -y awscli >> $LOGFILE 2>&1
 apt install -y jq >> $LOGFILE 2>&1
-apt install -y git >> $LOGFILE 2>&1v
-apt install -y gcc >> $LOGFILE 2>&1v
+apt install -y git >> $LOGFILE 2>&1
+apt install -y gcc >> $LOGFILE 2>&1
 wget -c https://dl.google.com/go/go1.14.2.linux-amd64.tar.gz -O - | sudo tar -xz -C /usr/local >> $LOGFILE 2>&1
 export PATH=$PATH:/usr/local/go/bin >> $LOGFILE 2>&1
 export GOPATH=/usr/local/go/bin
@@ -201,7 +201,7 @@ cd $MOUNT_POINT >> $LOGFILE 2>&1
 git clone https://github.com/binance-chain/bsc >> $LOGFILE 2>&1
 cd bsc
 make geth >> $LOGFILE 2>&1
-mv geth ../
+cp ./build/bin/geth ../
 cd ../
 ## Geth Configuration Files
 wget   $(curl -s https://api.github.com/repos/binance-chain/bsc/releases/latest |grep browser_ |grep mainnet |cut -d\" -f4) >> $LOGFILE 2>&1
@@ -215,10 +215,11 @@ geth --datadir node init genesis.json >> $LOGFILE 2>&1
 touch startgeth.sh >> $LOGFILE 2>&1
 
 cat >> startgeth.sh <<EOL
+export HOME=/root
 export PATH=$PATH:/usr/local/go/bin:. >> $LOGFILE 2>&1
 export GOPATH=/usr/local/go/bin
 cd $MOUNT_POINT
-./geth --config ./config.toml --datadir ./node --pprofaddr 0.0.0.0 --metrics --pprof --rpc --rpcaddr 0.0.0.0 --rpcapi eth,net,web3,shh --rpccorsdomain '*' >>geth.log 2>&1
+./geth --config ./config.toml  --datadir ./node --syncmode full --gcmode=archive --pprofaddr 0.0.0.0 --metrics --pprof --rpc --rpcaddr 0.0.0.0 --rpcapi eth,net,web3,personal --rpccorsdomain '*' >>geth.log 2>&1
 EOL
 
 chmod 755 startgeth.sh >> $LOGFILE 2>&1
