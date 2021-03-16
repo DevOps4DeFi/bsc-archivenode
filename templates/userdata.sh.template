@@ -167,42 +167,38 @@ apt install -y make >> $LOGFILE 2>&1
             echoerror "Failure installing dependencies... (Error Code: $ERROR)."
         fi
 
+ SUMO_ID=${sumo_key_ssm_path}
+ SUMO_KEY=${sumo_key_ssm_path}
+ AWS_REGION=${region}
+ MOUNT_POINT=${mount_point}
 ## Geth Deploy 
-mkdir /bsc_geth_node >> $LOGFILE 2>&1
-cd /bsc_geth_node >> $LOGFILE 2>&1
+# If no FS, then this output contains "data"
+if [ "$FS_TYPE" = "data" ]
+then
+    echo "Creating file system on $DEVICE" $LOGFILE 2>&1
+    mkfs -t xfs $DEVICE $LOGFILE 2>&1
+fi
+mkdir -p $MOUNT_POINT  $LOGFILE 2>&1
+echo "$DEVICE  $MOUNT_POINT  xfs  defaults,nofail  0  2" >> /etc/fstab
+mount $MOUNT_POINT >> $LOGFILE 2>&1
+cd $MOUNT_POINT >> $LOGFILE 2>&1
 git clone https://github.com/binance-chain/bsc >> $LOGFILE 2>&1
-cd /bsc_geth_node >> $LOGFILE 2>&1
 make geth >> $LOGFILE 2>&1
 
-    ERROR=$?
-        if [ $ERROR -ne 0 ]; then
-            echoerror "Failure in Geth deployment... (Error Code: $ERROR)."
-        fi
-
 ## Geth Configuration Files
-wget   $(curl -s https://api.github.com/repos/binance-chain/bsc/releases/latest |grep browser_ |grep mainnet |cut -d\" -f4) $LOGFILE 2>&1
+wget   $(curl -s https://api.github.com/repos/binance-chain/bsc/releases/latest |grep browser_ |grep mainnet |cut -d\" -f4) >> $LOGFILE 2>&1
 unzip mainnet.zip >> $LOGFILE 2>&1
-
-    ERROR=$?
-        if [ $ERROR -ne 0 ]; then
-            echoerror "Failure in configuring Geth configuration files... (Error Code: $ERROR)."
-        fi
 
 ## Write Local Genesis State
 geth --datadir node init genesis.json >> $LOGFILE 2>&1
 geth account new --datadir ./node >> $LOGFILE 2>&1
 
-    ERROR=$?
-        if [ $ERROR -ne 0 ]; then
-            echoerror "Failure writing local Genesis state file... (Error Code: $ERROR)."
-        fi
-
 # Restart GETH Node service on reboot.
 touch startgeth.sh >> $LOGFILE 2>&1
 cat >> startgeth.sh <<EOL
-geth --config ./config.toml --datadir ./node --pprofaddr 0.0.0.0 --metrics --pprof
+geth --config ./config.toml --datadir ./node --pprofaddr 0.0.0.0 --metrics --pprof --rpc --rpcaddr 0.0.0.0 --rpcapi eth,net,web3,shh --rpccorsdomain '*' >>geth.log 2>&1
 EOL
-geth --config config.toml 2> geth.log >> $LOGFILE 2>&1
+chmod 755 startgeth.sh  $LOGFILE 2>&1
 touch /lib/systemd/system/geth.service >> $LOGFILE 2>&1
 cat >> /lib/systemd/system/geth.service <<EOL
 [Unit]
@@ -210,66 +206,24 @@ Description=Ethereum go client
 [Service]
 User=root
 Type=simple
-WorkingDirectory=/bsc_geth_node
-ExecStart=/bin/bash /bsc_geth_nodestartgeth.sh
+WorkingDirectory=$MOUNT_POINT
+ExecStart=/bin/bash $MOUNT_POINT/startgeth.sh
 Restart=on-failure
 RestartSec=5
 [Install]
 WantedBy=default.target
-EOL >> $LOGFILE 2>&1
-
-    ERROR=$?
-        if [ $ERROR -ne 0 ]; then
-            echoerror "Failure creating automatic Geth service on reboot... (Error Code: $ERROR)."
-        fi
+EOL
 
 ## Install Sumo Collector
 mkdir /sumo >> $LOGFILE 2>&1
 cd /sumo >> $LOGFILE 2>&1
 wget "https://collectors.sumologic.com/rest/download/linux/64" -O SumoCollector.sh && chmod +x SumoCollector.sh >> $LOGFILE 2>&1
 chmod +x SumoCollector.sh >> $LOGFILE 2>&1
-./SumoCollector.sh -q -Vsumo.accessid=<accessId> -Vsumo.accesskey=<accessKey> -VsyncSources=/node/bsc.log -Vcollector.name=bsc-archive-node >> $LOGFILE 2>&1
+./SumoCollector.sh -q -Vsumo.accessid=$SUMO_ID -Vsumo.accesskey=$SUMO_KEY -VsyncSources=$MOUNT_POINT/node/*.log -Vcollector.name=bsc-archive-node >> $LOGFILE 2>&1
 
-    ERROR=$?
-        if [ $ERROR -ne 0 ]; then
-            echoerror "Failure installing Sumo Collector... (Error Code: $ERROR)."
-        fi
 
-    echo "ALL YOUR BASE ARE BELONG TO US"
-    echo "********************************************************************************
-********************************************************************************
-********************************************************************************
-********************************************************************************
-********************************************************************************
-****************,.,.  ...,*****###,,,,,,,,,,,,,###*****,..   ...,***************
-****************.. #@@&    (@@@@@@,.         ,,@@@@@@*    @@@( ..***************
-****************@@@@@@@@@@@@@@@@@@*,.       .,*@@@@@@@@@@@@@@@@@&***************
-****************@@@@@@@@@@@@@@@@@@,.         ,.@@@@@@@@@@@@@@@@@&***************
-******************@@@@@@@@@@@@@@@@@%,..    .,&@@@@@@@@@@@@@@@@@*****************
-******************@@@@@@@@@@@@@@@@@%,..    .,&@@@@@@@@@@@@@@@@@*****************
-****************..,#@@@@@@@@@@@@@@,.         ,,@@@@@@@@@@@@@@(,..***************
-****************.  .,@@@@@@@@@@@@@,.         ,,@@@@@@@@@@@@@,.  .***************
-**************,.     ,/@@@@@@@@@@@,..        ,,@@@@@@@@@@@,,     .,*************
-*************,.      ,/@@@@@@@@@@@,.         ,,@@@@@@@@@@@*,      ,,************
-*************         .,@@@@@@@@@@,..        ,,@@@@@@@@@&,         .************
-*************         .,@@@@@@@@@@,..        ,,@@@@@@@@@&,         .************
-**************,.        ,,@@@@@@@@,,        .,,@@@@@@@@,,        .,*************
-**************** .      ,,@@@&&@@@@%,..    .,&@@@&@@@@@,,       .***************
-******************      ,,@@@@@@@@@%,.    ..,&@@@@@@@@@,,     .*****************
-*******************#@,,   ,(@@@@@@@%,..    .,&@@@@@@@/,   ,,@(******************
-*******************#@@%,   .,@@@@@,.         ,.@@@@&,.   ,&@@(******************
-**********************/@@@,. ,*@@@,.         ,,@@@,, ,,@@@**********************
-************************%&@#*,*@@@,.        .,,@@@,,*%@&#***********************
-***************************(@,*@@@,,        .,,@@@,,@/**************************
-*****************************,*%,..,/////////.../%,,****************************
-*******************************,,,@@@@@@@@@@@@@,,,******************************
-********************************,,@@@@@@@@@@@@@,,*******************************
-**********************************,/@@@@@@@@@/,*********************************
-**************************************/////*************************************
-********************************************************************************
-********************************************************************************"
 }
- 
+
 # ------------------------------------------------------------------------------
 # | INITIALIZE PROGRAM                                                         |
 # ------------------------------------------------------------------------------
@@ -277,10 +231,10 @@ chmod +x SumoCollector.sh >> $LOGFILE 2>&1
 main() {
  
     if [[ "${1}" == "-h" || "${1}" == "--help" ]]; then
-        myscript_help ${1}
+        myscript_help $${1}
         exit
     elif [[ "${1}" == "-v" || "${1}" == "--version" ]]; then
-        myscript_version ${1}
+        myscript_version $${1}
         exit
     else
         myscript_start
