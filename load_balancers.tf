@@ -50,7 +50,14 @@ resource "aws_lb_target_group" "bsc-jsonrpc-private" {
   }
 }
 
-
+resource "aws_lb_target_group_attachment" "public" {
+  target_group_arn = aws_lb_target_group.bsc-jsonrpc-public.arn
+  target_id = aws_instance.bsc_archive.id
+}
+resource "aws_lb_target_group_attachment" "private" {
+  target_group_arn = aws_lb_target_group.bsc-jsonrpc-private.arn
+  target_id = aws_instance.bsc_archive.id
+}
 ## If so they need their own target groups.
 resource "aws_lb_listener_rule" "bsc-node-public" {
   listener_arn = var.public_lb_https_listener_arn

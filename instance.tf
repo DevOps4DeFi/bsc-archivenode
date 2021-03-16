@@ -72,8 +72,8 @@ resource "aws_security_group" "bsc-node" {
   }
   ingress {
     protocol    = "TCP"
-    from_port   = 8454
-    to_port     = 8454
+    from_port   = 8545
+    to_port     = 8545
     cidr_blocks = [local.vpc_cidr]
   }
   egress {
