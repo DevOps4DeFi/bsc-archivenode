@@ -175,8 +175,8 @@ apt install -y make >> $LOGFILE 2>&1
 ## Geth Deploy 
 
 add-apt-repository -y ppa:ethereum/ethereum >> $LOGFILE 2>&1
-apt-get update >> $LOGFILE 2>&1
-apt-get install ethereum >> $LOGFILE 2>&1
+apt-get update -y >> $LOGFILE 2>&1
+apt-get install ethereum -y >> $LOGFILE 2>&1
 
     ERROR=$?
         if [ $ERROR -ne 0 ]; then
