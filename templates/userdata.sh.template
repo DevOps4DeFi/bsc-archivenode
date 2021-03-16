@@ -158,10 +158,15 @@ apt update >> $LOGFILE 2>&1
 apt install -y awscli >> $LOGFILE 2>&1
 apt install -y jq >> $LOGFILE 2>&1
 apt install -y git >> $LOGFILE 2>&1v
+apt install -y gcc >> $LOGFILE 2>&1v
 wget -c https://dl.google.com/go/go1.14.2.linux-amd64.tar.gz -O - | sudo tar -xz -C /usr/local >> $LOGFILE 2>&1
 export PATH=$PATH:/usr/local/go/bin >> $LOGFILE 2>&1
+export GOPATH=/usr/local/go/bin
 apt install -y unzip >> $LOGFILE 2>&1
 apt install -y make >> $LOGFILE 2>&1
+### Install go dependancies
+go get -d github.com/ethereum/go-ethereum
+
 
     ERROR=$?
         if [ $ERROR -ne 0 ]; then
@@ -175,14 +180,11 @@ apt install -y make >> $LOGFILE 2>&1
 
 ## Geth Deploy 
 
-add-apt-repository -y ppa:ethereum/ethereum >> $LOGFILE 2>&1
-apt-get update -y >> $LOGFILE 2>&1
-apt-get install ethereum -y >> $LOGFILE 2>&1
 
-    ERROR=$?
-        if [ $ERROR -ne 0 ]; then
-            echoerror "Geth install has failed... (Error Code: $ERROR)."
-        fi
+#add-apt-repository -y ppa:ethereum/ethereum >> $LOGFILE 2>&1
+#apt-get update -y >> $LOGFILE 2>&1
+#apt-get install ethereum -y >> $LOGFILE 2>&1
+
 
 # If no FS, then this output contains "data"
 DEVICE=${ebs_device_name}
@@ -211,9 +213,14 @@ geth --datadir node init genesis.json >> $LOGFILE 2>&1
 
 # Restart GETH Node service on reboot.
 touch startgeth.sh >> $LOGFILE 2>&1
+
 cat >> startgeth.sh <<EOL
-geth --config ./config.toml --datadir ./node --pprof.addr 0.0.0.0 --metrics --pprof --rpc --rpcaddr 0.0.0.0 --rpcapi eth,net,web3,shh --rpccorsdomain '*' >>geth.log 2>&1
+export PATH=$PATH:/usr/local/go/bin:. >> $LOGFILE 2>&1
+export GOPATH=/usr/local/go/bin
+cd $MOUNT_POINT
+./geth --config ./config.toml --datadir ./node --pprofaddr 0.0.0.0 --metrics --pprof --rpc --rpcaddr 0.0.0.0 --rpcapi eth,net,web3,shh --rpccorsdomain '*' >>geth.log 2>&1
 EOL
+
 chmod 755 startgeth.sh >> $LOGFILE 2>&1
 touch /lib/systemd/system/geth.service >> $LOGFILE 2>&1
 cat >> /lib/systemd/system/geth.service <<EOL
