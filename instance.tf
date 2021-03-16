@@ -23,7 +23,7 @@ resource "aws_iam_instance_profile" "bsc-archive" {
   role        = aws_iam_role.instance_role.name
 }
 
-data "aws_iam_policy_document" "graphnode-ssm-parmas" {
+data "aws_iam_policy_document" "sumo-ssm-parmas" {
   ### maybe you needed access to your parameters
   statement {
     actions = [
@@ -36,17 +36,28 @@ data "aws_iam_policy_document" "graphnode-ssm-parmas" {
     actions = [
       "ssm:GetParameters",
     ]
-    resources = ["arn:aws:ssm:${var.region}:${data.aws_caller_identity.this.account_id}:parameter/${trim(local.sumo_api_key_ssm_path, "/")}"]
+    resources = [
+      "arn:aws:ssm:${var.region}:${data.aws_caller_identity.this.account_id}:parameter/${trim(var.sumo_key_ssm_path, "/")}",
+      "arn:aws:ssm:${var.region}:${data.aws_caller_identity.this.account_id}:parameter/${trim(var.sumo_id_ssm_path, "/")}"
+    ]
   }
 }
 
-resource "aws_iam_role_policy" "graph-node-instance-profile" {
-  count = var.sumo_api_key_ssm_path != "" ? 1 : 0
-  name   = "graph-node-instance-policy"
-  role   = aws_iam_role.instance_role.id
-  policy = data.aws_iam_policy_document.graphnode-ssm-parmas.json
+resource "aws_iam_policy" "sumo_api_key_profile" {
+  count       = var.sumo_key_ssm_path != "" ? 1 : 0
+  name_prefix = "sumossm"
+  policy      = data.aws_iam_policy_document.sumo-ssm-parmas.json
 }
 
+resource "aws_iam_role_policy_attachment" "sumo_ssm_param" {
+  count      = var.sumo_key_ssm_path != "" ? 1 : 0
+  role       = aws_iam_role.instance_role.id
+  policy_arn = aws_iam_policy.sumo_api_key_profile[0].arn
+}
+resource "aws_iam_role_policy_attachment" "sumo_ssm_agent" {
+  role       = aws_iam_role.instance_role.id
+  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+}
 ###TODO break out the rules into aws_security_group_rule statements each with their own description
 resource "aws_security_group" "bsc-node" {
   name_prefix = var.app_name
@@ -80,14 +91,17 @@ resource "aws_security_group" "bsc-node" {
 data "template_file" "userdata" {
   template = file("${path.module}/templates/userdata.sh.template")
   vars = {
-    sumo_api_ssm_path = var.sumo_api_key_ssm_path
-    region                = var.region
+    sumo_key_ssm_path = var.sumo_key_ssm_path
+    sumo_id_ssm_path  = var.sumo_id_ssm_path
+    region            = var.region
+    ebs_device_name   = "/dev/xvdf"
+    mount_point       = "/bsc_geth"
   }
 }
 
 data "aws_ami" "amazon-linux" {
   most_recent = true
-  owners = ["099720109477"] # Canonical
+  owners      = ["099720109477"] # Canonical
   filter {
     name   = "name"
     values = ["ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-amd64-server-*"]
@@ -99,74 +113,23 @@ data "aws_ami" "amazon-linux" {
 }
 
 resource "aws_instance" "bsc_archive" {
-  name_prefix                 = var.app_name
-  ami                    = data.aws_ami.amazon-linux.id
+  ami                         = data.aws_ami.amazon-linux.id
   instance_type               = var.instance_type
   iam_instance_profile        = aws_iam_instance_profile.bsc-archive.name
   security_groups             = [aws_security_group.bsc-node.id]
   associate_public_ip_address = false
   disable_api_termination     = var.disable_instance_termination
-  subnet_id                   = var.private_subnet_ids
+  subnet_id                   = var.private_subnet_ids[0]
   monitoring                  = true
   vpc_security_group_ids      = [aws_security_group.bsc-node.id]
   user_data                   = data.template_file.userdata.rendered
   key_name                    = var.aws_keypair_name
   ebs_block_device {
-      device_name           = "/dev/xvdf"
-      volume_type           = "gp2"
-      volume_size           = var.datavolume_size
-      snapshot_id = var.ebs_snapshot_id
-      delete_on_termination = false
-    }
-}
-
-/*
-resource "aws_launch_template" "graphnode" {
-  name_prefix = local.app_name
-  image_id = data.aws_ami.amazon-linux.id
-  instance_type = local.instance_type
-  ebs_optimized = true
-  key_name = local.ssh_key_pair_name
-  vpc_security_group_ids = [aws_security_group.graph-node.id]
-  user_data = base64encode(data.template_file.userdata.rendered)
-  tags = {Name = local.app_name}
-  block_device_mappings {
-    device_name = data.aws_ami.amazon-linux.root_device_name
-    ebs {
-      volume_size = local.instance_storage_size
-      volume_type = "gp3"
-      delete_on_termination = true
-    }
-  }
-  lifecycle {
-    ignore_changes = [
-      image_id]
-    ## Don't rebuild instances by default every time there is a newer AMI when terraform runs
-  }
-  iam_instance_profile {
-    arn = aws_iam_instance_profile.graphnode.arn
-  }
-  tag_specifications {
-    resource_type = "instance"
-    tags          =  { Name = local.app_name}
-  }
-
-}
-*/
-
-##TODO write autoscaling policies once we understand application load
-## Right now this asg basically will just keep local.desired_nodes running
-resource "aws_autoscaling_group" "autopilot_worker" {
-  desired_capacity     = local.desired_nodes
-  max_size             = local.max_nodes
-  min_size             = local.min_nodes
-  health_check_type    = "EC2"
-  vpc_zone_identifier  = local.subnets
-  target_group_arns    = [aws_lb_target_group.graphnode-graphql.arn]
-  launch_configuration = aws_launch_configuration.graphnode.id
-  lifecycle {
-    ignore_changes        = [desired_capacity]
-    create_before_destroy = true
+    device_name           = "/dev/xvdf"
+    volume_type           = "gp2"
+    volume_size           = var.datavolume_size
+    snapshot_id           = var.ebs_snapshot_id
+    delete_on_termination = false
   }
 }
 
