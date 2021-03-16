@@ -82,6 +82,7 @@ resource "aws_security_group" "bsc-node" {
     to_port     = 0
     cidr_blocks = ["0.0.0.0/0"]
   }
+  lifecycle {create_before_destroy = true}
 }
 
 ##TODO figure out a way to provide different graphs to userdata, right now this always grabs the badger one
@@ -128,6 +129,9 @@ resource "aws_instance" "bsc_archive" {
     volume_size           = var.datavolume_size
     snapshot_id           = var.ebs_snapshot_id
     delete_on_termination = false
+  }
+  lifecycle {
+    ignore_changes = [ami, security_groups, ]
   }
   tags = merge(var.tags, {Name = "bsc-archive-node"})
 }
