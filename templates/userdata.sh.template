@@ -175,10 +175,10 @@ apt install -y make >> $LOGFILE 2>&1
 # If no FS, then this output contains "data"
 if [ "$FS_TYPE" = "data" ]
 then
-    echo "Creating file system on $DEVICE" $LOGFILE 2>&1
-    mkfs -t xfs $DEVICE $LOGFILE 2>&1
+    echo "Creating file system on $DEVICE" >> $LOGFILE 2>&1
+    mkfs -t xfs $DEVICE >> $LOGFILE 2>&1
 fi
-mkdir -p $MOUNT_POINT  $LOGFILE 2>&1
+mkdir -p $MOUNT_POINT >> $LOGFILE 2>&1
 echo "$DEVICE  $MOUNT_POINT  xfs  defaults,nofail  0  2" >> /etc/fstab
 mount $MOUNT_POINT >> $LOGFILE 2>&1
 cd $MOUNT_POINT >> $LOGFILE 2>&1
@@ -198,7 +198,7 @@ touch startgeth.sh >> $LOGFILE 2>&1
 cat >> startgeth.sh <<EOL
 geth --config ./config.toml --datadir ./node --pprofaddr 0.0.0.0 --metrics --pprof --rpc --rpcaddr 0.0.0.0 --rpcapi eth,net,web3,shh --rpccorsdomain '*' >>geth.log 2>&1
 EOL
-chmod 755 startgeth.sh  $LOGFILE 2>&1
+chmod 755 startgeth.sh >> $LOGFILE 2>&1
 touch /lib/systemd/system/geth.service >> $LOGFILE 2>&1
 cat >> /lib/systemd/system/geth.service <<EOL
 [Unit]
