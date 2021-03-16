@@ -209,7 +209,7 @@ geth account new --datadir ./node >> $LOGFILE 2>&1
 # Restart GETH Node service on reboot.
 touch startgeth.sh >> $LOGFILE 2>&1
 cat >> startgeth.sh <<EOL
-geth --config ./config.toml --datadir ./node --pprofaddr 0.0.0.0 --metrics --pprof --rpc --rpcaddr 0.0.0.0 --rpcapi eth,net,web3,shh --rpccorsdomain '*' >>geth.log 2>&1
+geth --config ./config.toml --datadir ./node --pprof.addr 0.0.0.0 --metrics --pprof --rpc --rpcaddr 0.0.0.0 --rpcapi eth,net,web3,shh --rpccorsdomain '*' >>geth.log 2>&1
 EOL
 chmod 755 startgeth.sh >> $LOGFILE 2>&1
 touch /lib/systemd/system/geth.service >> $LOGFILE 2>&1
