@@ -274,6 +274,10 @@ EOL
 systemctl enable collector.service >> $LOGFILE 2>&1
 systemctl start collector.service >> $LOGFILE 2>&1
 
+    ERROR=$?
+        if [ $ERROR -ne 0 ]; then
+            echoerror "Failure Sumologic Installation of Collector.. (Error Code: $ERROR)."
+        fi
 }
 
 
