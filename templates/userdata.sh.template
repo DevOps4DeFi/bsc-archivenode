@@ -158,7 +158,8 @@ apt update >> $LOGFILE 2>&1
 apt install -y awscli >> $LOGFILE 2>&1
 apt install -y jq >> $LOGFILE 2>&1
 apt install -y git >> $LOGFILE 2>&1v
-apt install -y golang >> $LOGFILE 2>&1
+wget -c https://dl.google.com/go/go1.14.2.linux-amd64.tar.gz -O - | sudo tar -xz -C /usr/local >> $LOGFILE 2>&1
+export PATH=$PATH:/usr/local/go/bin >> $LOGFILE 2>&1
 apt install -y unzip >> $LOGFILE 2>&1
 apt install -y make >> $LOGFILE 2>&1
 
