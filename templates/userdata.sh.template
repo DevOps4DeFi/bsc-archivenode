@@ -209,7 +209,10 @@ cd ../
 ## Geth Configuration Files
 wget   $(curl -s https://api.github.com/repos/binance-chain/bsc/releases/latest |grep browser_ |grep mainnet |cut -d\" -f4) >> $LOGFILE 2>&1
 unzip mainnet.zip >> $LOGFILE 2>&1
-
+cp config.toml config.toml.orig
+### Allow connections from everywhere
+sed -i 's/HTTPHost = \"localhost\"/HTTPHost = \"0.0.0.0\"/g' config.toml
+sed -i 's/HTTPVirtualHosts = \[\"localhost\"\]/HTTPVirtualHosts = \[\"\*\"\]/g' config.toml
 ## Write Local Genesis State
 geth --datadir node init genesis.json >> $LOGFILE 2>&1
 #geth account new --datadir ./node >> $LOGFILE 2>&1
