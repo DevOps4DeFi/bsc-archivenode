@@ -131,7 +131,7 @@ resource "aws_instance" "bsc_archive" {
     delete_on_termination = false
   }
   lifecycle {
-    ignore_changes = [ami, security_groups, ]
+    ignore_changes = [ami, security_groups, userdata]
   }
   tags = merge(var.tags, {Name = "bsc-archive-node"})
 }
