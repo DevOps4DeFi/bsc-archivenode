@@ -18,11 +18,11 @@ data "aws_lb" "private_alb" {
   name = var.private_lb_name
 }
 resource "aws_lb_target_group" "bsc-jsonrpc-public" {
-  name     = "bsc-jsonrpc-public"
+  name     = "${var.app_name}-jsonrpc-public"
   port     = "8545"
   protocol = "HTTP"
   vpc_id   = local.vpc_id
-  tags = merge(var.tags, {Name = "bsc-archive-node-public"})
+  tags = merge(var.tags, {Name = "${var.app_name}-public"})
 
   health_check { ##TODO figure out a better healthcheck maybe getting data from the monitoring/management ports
     healthy_threshold   = 3
@@ -34,11 +34,11 @@ resource "aws_lb_target_group" "bsc-jsonrpc-public" {
   }
 }
 resource "aws_lb_target_group" "bsc-jsonrpc-private" {
-  name     = "bsc-jsonrpc-private"
+  name     = "${var.app_name}-jsonrpc-private"
   port     = "8545"
   protocol = "HTTP"
   vpc_id   = local.vpc_id
-  tags = merge(var.tags, {Name = "bsc-archive-node-public"})
+  tags = merge(var.tags, {Name = "${var.app_name}-node-public"})
 
   health_check { ##TODO figure out a better healthcheck maybe getting data from the monitoring/management ports
     healthy_threshold   = 3
