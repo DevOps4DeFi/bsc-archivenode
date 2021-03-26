@@ -26,6 +26,16 @@ resource "aws_iam_instance_profile" "bsc-archive" {
 data "aws_iam_policy_document" "sumo-ssm-parmas" {
   ### maybe you needed access to your parameters
   statement {
+    sid = "cloudwatchlogs"
+    actions = [
+      "logs:CreateLogGroup",
+      "logs:CreateLogStream",
+      "logs:PutLogEvents",
+      "logs:DescribeLogStreams"
+    ]
+    resources = ["*"]
+  }
+  statement {
     actions = [
       "ssm:DescribeParameters"
     ]
