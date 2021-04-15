@@ -143,6 +143,6 @@ resource "aws_instance" "bsc_archive" {
   lifecycle {
     ignore_changes = [ami, security_groups, user_data]
   }
-  tags = merge(var.tags, {Name = "bsc-archive-node"})
+  tags = merge(var.tags, {Name = var.app_name})
 }
 
