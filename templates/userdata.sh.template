@@ -240,8 +240,8 @@ Type=simple
 WorkingDirectory=$MOUNT_POINT
 ExecStart=/bin/bash $MOUNT_POINT/startgeth.sh
 Restart=on-failure
-RestartSec=5
-TimeoutStopSec=10m
+RestartSec=60
+TimeoutStopSec=900m
 [Install]
 WantedBy=default.target
 EOL
@@ -249,38 +249,10 @@ EOL
 systemctl enable geth
 systemctl start geth
 
-## Install Sumo Collector
+## Install Logs Collector
+curl https://s3.amazonaws.com/aws-cloudwatch/downloads/latest/awslogs-agent-setup.py -O
 
-mkdir /sumo >> $LOGFILE 2>&1
-cd /sumo >> $LOGFILE 2>&1
-wget "https://collectors.sumologic.com/rest/download/linux/64" -O SumoCollector.sh && chmod +x SumoCollector.sh >> $LOGFILE 2>&1
-chmod +x SumoCollector.sh >> $LOGFILE 2>&1
-./SumoCollector.sh -q -Vsumo.accessid=$SUMO_ID -Vsumo.accesskey=$SUMO_KEY -VsyncSources=$MOUNT_POINT/node/ -Vcollector.name=bsc-archive-node >> $LOGFILE 2>&1
 
-cat >> /lib/systemd/system/collector.service <<EOL
-[Unit]
-Description=Sumo Logic Collector
-
-[Service]
-Type=forking
-ExecStart=/opt/SumoCollector/collector start
-ExecStop=/opt/SumoCollector/collector stop
-
-# Give a reasonable amount of time for the server to start up/shut down
-TimeoutSec=300
-
-[Install]
-WantedBy=multi-user.target
-EOL
-
-systemctl enable collector.service >> $LOGFILE 2>&1
-systemctl start collector.service >> $LOGFILE 2>&1
-
-    ERROR=$?
-        if [ $ERROR -ne 0 ]; then
-            echoerror "Failure Sumologic Installation of Collector.. (Error Code: $ERROR)."
-        fi
-}
 
 
 # ------------------------------------------------------------------------------

@@ -36,7 +36,11 @@ variable "vpc_id" {
   default     = null
   description = "The VPC to deploy into, if null use default vpc."
 }
-
+variable "datavolume_type" {
+  type        = string
+  default     = "gp2"
+  description = "The amount of storage to allocate in gb for storage"
+}
 variable "datavolume_size" {
   type        = number
   default     = 1500

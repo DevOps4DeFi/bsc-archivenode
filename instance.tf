@@ -135,7 +135,7 @@ resource "aws_instance" "bsc_archive" {
   key_name                    = var.aws_keypair_name
   ebs_block_device {
     device_name           = "/dev/sdf"
-    volume_type           = "gp2"
+    volume_type           = var.datavolume_type
     volume_size           = var.datavolume_size
     snapshot_id           = var.ebs_snapshot_id
     delete_on_termination = false
