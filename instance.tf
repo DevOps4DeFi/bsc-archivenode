@@ -134,7 +134,7 @@ resource "aws_instance" "bsc_archive" {
   user_data                   = data.template_file.userdata.rendered
   key_name                    = var.aws_keypair_name
   ebs_block_device {
-    device_name           = "/dev/sdb"
+    device_name           = "/dev/sdf"
     volume_type           = "gp2"
     volume_size           = var.datavolume_size
     snapshot_id           = var.ebs_snapshot_id
