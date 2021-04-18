@@ -36,6 +36,12 @@ variable "vpc_id" {
   default     = null
   description = "The VPC to deploy into, if null use default vpc."
 }
+
+variable "instance_id" {
+  type = string
+  default = null
+  description = "Don't built an instance but instead adopt it changing security and adding to lb."
+}
 variable "datavolume_type" {
   type        = string
   default     = "gp2"

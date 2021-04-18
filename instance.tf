@@ -86,6 +86,20 @@ resource "aws_security_group" "bsc-node" {
     to_port     = 8545
     cidr_blocks = [local.vpc_cidr]
   }
+  ingress {
+    protocol    = "TCP"
+    from_port   = 30300
+    to_port     = 30320
+    cidr_blocks = [local.vpc_cidr]
+    description = "geth"
+  }
+  ingress {
+    protocol    = "UDP"
+    from_port   = 30300
+    to_port     = 30320
+    cidr_blocks = [local.vpc_cidr]
+    description = "geth"
+  }
   egress {
     protocol    = "-1"
     from_port   = 0
@@ -104,7 +118,7 @@ data "template_file" "userdata" {
     sumo_id_ssm_path  = var.sumo_id_ssm_path
     region            = var.region
     ebs_device_name   = "/dev/nvme1n1"
-    mount_point       = "/bsc_geth"
+    mount_point       = "/bscgeth"
   }
 }
 
@@ -113,7 +127,7 @@ data "aws_ami" "amazon-linux" {
   owners      = ["099720109477"] # Canonical
   filter {
     name   = "name"
-    values = ["ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-amd64-server-*"]
+    values = ["ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-*"]
   }
   filter {
     name   = "virtualization-type"
@@ -121,7 +135,11 @@ data "aws_ami" "amazon-linux" {
   }
 }
 
+locals {
+  instance_id = var.instance_id == null ? aws_instance.bsc_archive[0].id : var.instance_id
+}
 resource "aws_instance" "bsc_archive" {
+  count = var.instance_id == null ? 1 : 0
   ami                         = data.aws_ami.amazon-linux.id
   instance_type               = var.instance_type
   iam_instance_profile        = aws_iam_instance_profile.bsc-archive.name
@@ -141,7 +159,7 @@ resource "aws_instance" "bsc_archive" {
     delete_on_termination = false
   }
   lifecycle {
-    ignore_changes = [ami, security_groups, user_data]
+    ignore_changes = [ami, security_groups, user_data, ebs_block_device]
   }
   tags = merge(var.tags, {Name = var.app_name})
 }
