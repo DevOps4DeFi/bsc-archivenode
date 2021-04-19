@@ -81,6 +81,20 @@ resource "aws_security_group" "bsc-node" {
     cidr_blocks = ["0.0.0.0/0"]
   }
   ingress {
+    protocol = "TCP"
+    from_port = 9100
+    to_port = 9100
+    cidr_blocks = [data.aws_vpc.vpc.cidr_block]
+    description = "System Prometheus Metrics"
+  }
+  ingress {
+    protocol = "TCP"
+    from_port = 6060
+    to_port = 6060
+    cidr_blocks = [data.aws_vpc.vpc.cidr_block]
+    description = "GETH Prometheus Metrics"
+  }
+  ingress {
     protocol    = "TCP"
     from_port   = 8545
     to_port     = 8545

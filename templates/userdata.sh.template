@@ -1,104 +1,4 @@
-#!/usr/bin/env bash
- 
-
-# ------------------------------------------------------------------------------
-# | UTILS                                                                      |
-# ------------------------------------------------------------------------------
- 
-# Header logging
-e_header() {
-    printf "$(tput setaf 38)→ %s$(tput sgr0)\n" "$@"
-}
- 
-# Success logging
-e_success() {
-    printf "$(tput setaf 76)✔ %s$(tput sgr0)\n" "$@"
-}
- 
-# Error logging
-e_error() {
-    printf "$(tput setaf 1)✖ %s$(tput sgr0)\n" "$@"
-}
- 
-# Warning logging
-e_warning() {
-    printf "$(tput setaf 3)! %s$(tput sgr0)\n" "$@"
-}
- 
-# ------------------------------------------------------------------------------
-# | MAIN FUNCTIONS                                                             |
-# ------------------------------------------------------------------------------
- 
-# My Script Help
-myscript_help() {
- 
-cat <<EOT
- 
-------------------------------------------------------------------------------
-MYSCRIPT - DESCRIPTION
-------------------------------------------------------------------------------
- 
-Usage: ./myscript.sh [options]
-Example: ./myscript.sh
- 
-Options:
-    -h, --help      output program instructions
-    -v, --version   output program version
- 
-Important:
-    If you prefer, create an alias: myalias="bash ~/path/to/script/myscript.sh"
-    And execute with: myscript
- 
-EOT
- 
-}
- 
-# My Script Version
-myscript_version() {
-    echo "$PROGRAM: v$VERSION"
-}
- 
-# My Script Start
-myscript_start() {
-
-    # Script Start
-    echo "bsc-node-deploy Automated Installation"
-    echo "Maintained by Badger"
-    echo "********************************************************************************
-********************************************************************************
-********************************************************************************
-********************************************************************************
-********************************************************************************
-****************,.,.  ...,*****###,,,,,,,,,,,,,###*****,..   ...,***************
-****************.. #@@&    (@@@@@@,.         ,,@@@@@@*    @@@( ..***************
-****************@@@@@@@@@@@@@@@@@@*,.       .,*@@@@@@@@@@@@@@@@@&***************
-****************@@@@@@@@@@@@@@@@@@,.         ,.@@@@@@@@@@@@@@@@@&***************
-******************@@@@@@@@@@@@@@@@@%,..    .,&@@@@@@@@@@@@@@@@@*****************
-******************@@@@@@@@@@@@@@@@@%,..    .,&@@@@@@@@@@@@@@@@@*****************
-****************..,#@@@@@@@@@@@@@@,.         ,,@@@@@@@@@@@@@@(,..***************
-****************.  .,@@@@@@@@@@@@@,.         ,,@@@@@@@@@@@@@,.  .***************
-**************,.     ,/@@@@@@@@@@@,..        ,,@@@@@@@@@@@,,     .,*************
-*************,.      ,/@@@@@@@@@@@,.         ,,@@@@@@@@@@@*,      ,,************
-*************         .,@@@@@@@@@@,..        ,,@@@@@@@@@&,         .************
-*************         .,@@@@@@@@@@,..        ,,@@@@@@@@@&,         .************
-**************,.        ,,@@@@@@@@,,        .,,@@@@@@@@,,        .,*************
-**************** .      ,,@@@&&@@@@%,..    .,&@@@&@@@@@,,       .***************
-******************      ,,@@@@@@@@@%,.    ..,&@@@@@@@@@,,     .*****************
-*******************#@,,   ,(@@@@@@@%,..    .,&@@@@@@@/,   ,,@(******************
-*******************#@@%,   .,@@@@@,.         ,.@@@@&,.   ,&@@(******************
-**********************/@@@,. ,*@@@,.         ,,@@@,, ,,@@@**********************
-************************%&@#*,*@@@,.        .,,@@@,,*%@&#***********************
-***************************(@,*@@@,,        .,,@@@,,@/**************************
-*****************************,*%,..,/////////.../%,,****************************
-*******************************,,,@@@@@@@@@@@@@,,,******************************
-********************************,,@@@@@@@@@@@@@,,*******************************
-**********************************,/@@@@@@@@@/,*********************************
-**************************************/////*************************************
-********************************************************************************
-********************************************************************************"
-    echo "If installation fails, please check logfile in /var/log/bsc-node-deploy.log"
-    echo "Please wait while installation and configuration begins"
-    echo "Initializing Script..."
+#!/bin/bash
 
 # Global Variables
     LOGFILE="/var/log/bsc-node-deploy.log"
@@ -152,16 +52,13 @@ fi
 mkdir -p $MOUNT_POINT >> $LOGFILE 2>&1
 echo "$DEVICE  $MOUNT_POINT  xfs  defaults,nofail  0  2" >> /etc/fstab
 mount $MOUNT_POINT >> $LOGFILE 2>&1
+rm /$MOUNT_POINT/node/geth/nodekey
 cd $MOUNT_POINT >> $LOGFILE 2>&1
-git clone https://github.com/binance-chain/bsc >> $LOGFILE 2>&1
-cd bsc
-export PATH=$PATH:/usr/local/go/bin:. >> $LOGFILE 2>&1
-export GOPATH=/usr/local/go/bin
-export HOME=/root
-make geth >> $LOGFILE 2>&1
-cp ./build/bin/geth ../
-cd ../
+
+wget  https://github.com/binance-chain/bsc/releases/download/v1.0.7/geth_linux
+mv geth_linux geth
 ## Geth Configuration Files
+cp config.toml config.toml.beforeinit
 wget   $(curl -s https://api.github.com/repos/binance-chain/bsc/releases/latest |grep browser_ |grep mainnet |cut -d\" -f4) >> $LOGFILE 2>&1
 unzip mainnet.zip >> $LOGFILE 2>&1
 cp config.toml config.toml.orig
@@ -201,31 +98,4 @@ WantedBy=default.target
 EOL
 
 systemctl enable geth
-#systemctl start geth
-
-## Install Logs Collector
-curl https://s3.amazonaws.com/aws-cloudwatch/downloads/latest/awslogs-agent-setup.py -O
-
-
-
-
-# ------------------------------------------------------------------------------
-# | INITIALIZE PROGRAM                                                         |
-# ------------------------------------------------------------------------------
- 
-main() {
- 
-    if [[ "$${1}" == "-h" || "$${1}" == "--help" ]]; then
-        myscript_help $${1}
-        exit
-    elif [[ "$${1}" == "-v" || "$${1}" == "--version" ]]; then
-        myscript_version $${1}
-        exit
-    else
-        myscript_start
-    fi
- 
-}
- 
-# Initialize
-main $*
+systemctl start geth

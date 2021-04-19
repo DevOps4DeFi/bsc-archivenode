@@ -13,3 +13,14 @@ resource "aws_route53_record" "bsc-archive" {
     zone_id                = data.aws_lb.public_alb.zone_id
   }
 }
+
+data "aws_instance" "geth" {
+  instance_id = local.instance_id
+}
+resource "aws_route53_record" "bsc-metric" {
+  zone_id = data.aws_route53_zone.rootzone.zone_id
+  name = "${var.app_name}-prom"
+  type = "CNAME"
+  records = [data.aws_instance.geth.private_dns]
+  ttl = 30
+}
